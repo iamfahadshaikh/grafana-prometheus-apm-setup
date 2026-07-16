@@ -1,0 +1,62 @@
+############################################################
+# Extensions
+############################################################
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+############################################################
+# Receivers
+############################################################
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+############################################################
+# Processors
+############################################################
+
+processors:
+  batch:
+    timeout: 5s
+    send_batch_size: 1024
+  memory_limiter:
+    check_interval: 5s
+    limit_mib: 512
+    spike_limit_mib: 128
+
+############################################################
+# Exporters
+############################################################
+
+exporters:
+  debug:
+    verbosity: normal
+  otlp:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+
+############################################################
+# Service
+############################################################
+
+service:
+  extensions:
+    - health_check
+  pipelines:
+    traces:
+      receivers:
+        - otlp
+      processors:
+        - memory_limiter
+        - batch
+      exporters:
+        - otlp
+        - debug

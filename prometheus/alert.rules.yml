@@ -1,0 +1,47 @@
+groups:
+  - name: CentralObservabilityNode
+    rules:
+      - alert: HostHighCPU
+        expr: 100 - avg(irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100 > 80
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Observability Server CPU high"
+          description: "CPU utilization exceeded 80% on the central observability server."
+
+      - alert: HostHighMemory
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 80
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Observability Server Memory high"
+          description: "RAM utilization exceeded 80% on the central observability server."
+
+      - alert: DiskAlmostFull
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 15
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk space low"
+          description: "Less than 15% disk space remaining on root partition."
+
+      - alert: ContainerHighCPU
+        expr: rate(container_cpu_usage_seconds_total{name!=""}[5m]) > 0.8
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container CPU high"
+          description: "Container {{ $labels.name }} CPU utilization exceeds 80%."
+
+      - alert: ContainerHighMemory
+        expr: (container_memory_usage_bytes{name!=""} / container_spec_memory_limit_bytes{name!=""}) > 0.80
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container Memory high"
+          description: "Container {{ $labels.name }} memory usage exceeds 80%."

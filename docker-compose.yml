@@ -287,3 +287,48 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+  ############################################################
+  # Blackbox Exporter - External Uptime & SSL Monitoring
+  ############################################################
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.25.0
+    container_name: blackbox-exporter
+    restart: unless-stopped
+    ports:
+      - "9115:9115"
+    command:
+      - --config.file=/etc/blackbox/blackbox.yml
+    volumes:
+      - ./blackbox/blackbox.yml:/etc/blackbox/blackbox.yml:ro
+    networks:
+      - observability
+
+  ############################################################
+  # Redis Exporter - Cache Metrics & Hit/Miss Ratios
+  ############################################################
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.58.0
+    container_name: redis-exporter
+    restart: unless-stopped
+    environment:
+      - REDIS_ADDR=redis://<YOUR_REDIS_IP_OR_CONTAINER>:6379
+      # - REDIS_PASSWORD=your_password_if_any
+    ports:
+      - "9121:9121"
+    networks:
+      - observability
+
+  ############################################################
+  # Postgres Exporter - Slow Queries & Connection Pool
+  ############################################################
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: postgres-exporter
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: "postgresql://db_user:db_password@<DB_HOST_IP>:5432/dbname?sslmode=disable"
+    ports:
+      - "9187:9187"
+    networks:
+      - observability

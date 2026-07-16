@@ -50,3 +50,33 @@ scrape_configs:
     static_configs:
       - targets:
           - tempo:3200
+  
+  - job_name: 'blackbox-http-uptime'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - https://google.com
+          - http://grafana:3000
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+  
+  - job_name: redis
+    static_configs:
+      - targets:
+          - redis-exporter:9121
+        labels:
+          environment: production
+
+  - job_name: postgres
+    static_configs:
+      - targets:
+          - postgres-exporter:9187
+        labels:
+          database_name: "production-db"

@@ -20,6 +20,25 @@ volumes:
 services:
 
   ############################################################
+  # Nginx - Reverse Proxy & Security Layer
+  ############################################################
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - grafana
+    networks:
+      - observability
+
+  ############################################################
   # Grafana - Central Dashboards & Analytics
   ############################################################
   grafana:
@@ -34,10 +53,10 @@ services:
       tempo:
         condition: service_healthy
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
-      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin_secure_password}
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
       GF_USERS_ALLOW_SIGN_UP: "false"
     volumes:
       - grafana-data:/var/lib/grafana
@@ -65,17 +84,24 @@ services:
     container_name: prometheus
     restart: unless-stopped
     user: root
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4GB
+        reservations:
+          memory: 1GB
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     command:
-      - --config.file=/etc/prometheus/prometheus.yml
-      - --storage.tsdb.path=/prometheus
-      - --storage.tsdb.retention.time=30d
       - --web.enable-lifecycle
       - --web.console.libraries=/usr/share/prometheus/console_libraries
       - --web.console.templates=/usr/share/prometheus/consoles
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=30d
+      - --storage.tsdb.retention.size=50GB
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./prometheus/alert.rules.yml:/etc/prometheus/alert.rules.yml:ro
@@ -102,7 +128,7 @@ services:
     container_name: alertmanager
     restart: unless-stopped
     ports:
-      - "9093:9093"
+      - "127.0.0.1:9093:9093"
     command:
       - --config.file=/etc/alertmanager/alertmanager.yml
       - --storage.path=/alertmanager
@@ -130,8 +156,13 @@ services:
     image: grafana/loki:2.9.6
     container_name: loki
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4GB
     ports:
-      - "3100:3100"
+      - "127.0.0.1:3100:3100"
     command:
       - -config.file=/etc/loki/config.yml
     volumes:
@@ -184,8 +215,13 @@ services:
     image: grafana/tempo:2.4.0
     container_name: tempo
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.5'
+          memory: 2GB
     ports:
-      - "3200:3200"
+      - "127.0.0.1:3200:3200"
     command:
       - -config.file=/etc/tempo/tempo.yml
     volumes:
@@ -216,10 +252,10 @@ services:
       tempo:
         condition: service_healthy
     ports:
-      - "4317:4317" # OTLP gRPC Receiver
-      - "4318:4318" # OTLP HTTP Receiver
-      - "8888:8888" # OTEL Collector Internal Metrics
-      - "13133:13133" # Healthcheck Extension
+      - "127.0.0.1:4317:4317"
+      - "127.0.0.1:4318:4318"
+      - "127.0.0.1:8888:8888"
+      - "127.0.0.1:13133:13133"
     command:
       - --config=/etc/otelcol-contrib/config.yaml
     volumes:
@@ -267,7 +303,7 @@ services:
     devices:
       - /dev/kmsg:/dev/kmsg
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
@@ -296,7 +332,7 @@ services:
     container_name: blackbox-exporter
     restart: unless-stopped
     ports:
-      - "9115:9115"
+      - "127.0.0.1:9115:9115"
     command:
       - --config.file=/etc/blackbox/blackbox.yml
     volumes:
@@ -313,9 +349,8 @@ services:
     restart: unless-stopped
     environment:
       - REDIS_ADDR=redis://<YOUR_REDIS_IP_OR_CONTAINER>:6379
-      # - REDIS_PASSWORD=your_password_if_any
     ports:
-      - "9121:9121"
+      - "127.0.0.1:9121:9121"
     networks:
       - observability
 
@@ -329,6 +364,6 @@ services:
     environment:
       DATA_SOURCE_NAME: "postgresql://db_user:db_password@<DB_HOST_IP>:5432/dbname?sslmode=disable"
     ports:
-      - "9187:9187"
+      - "127.0.0.1:9187:9187"
     networks:
       - observability

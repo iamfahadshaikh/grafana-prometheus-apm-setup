@@ -38,7 +38,7 @@ groups:
           description: "Container {{ $labels.name }} CPU utilization exceeds 80%."
 
       - alert: ContainerHighMemory
-        expr: (container_memory_usage_bytes{name!=""} / container_spec_memory_limit_bytes{name!=""}) > 0.80
+        expr: (container_memory_usage_bytes{name!=""} / (container_spec_memory_limit_bytes{name!=""} > 0)) > 0.80
         for: 2m
         labels:
           severity: warning

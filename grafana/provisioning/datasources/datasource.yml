@@ -6,7 +6,6 @@ deleteDatasources:
   - name: Tempo
 
 datasources:
-
   - name: Prometheus
     uid: prometheus
     type: prometheus
@@ -28,17 +27,12 @@ datasources:
     access: proxy
     url: http://tempo:3200
     editable: true
-
     jsonData:
-
       tracesToLogs:
         datasourceUid: loki
-
       serviceMap:
         datasourceUid: prometheus
-
       nodeGraph:
         enabled: true
-
       search:
         hide: false

@@ -98,6 +98,7 @@ services:
     command:
       - --web.enable-lifecycle
       - --web.console.libraries=/usr/share/prometheus/console_libraries
+      - --web.enable-remote-write-receiver
       - --web.console.templates=/usr/share/prometheus/consoles
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.retention.time=30d

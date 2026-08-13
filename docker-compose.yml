@@ -375,6 +375,7 @@ services:
     restart: unless-stopped
     command:
       - "--nginx.scrape-uri=http://nginx/nginx_status"
+      - "--nginx.ssl-verify=false"
     depends_on:
       - nginx
     networks:

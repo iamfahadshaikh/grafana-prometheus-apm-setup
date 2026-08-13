@@ -367,3 +367,14 @@ services:
       - "127.0.0.1:9187:9187"
     networks:
       - observability
+
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:1.4.2
+    container_name: nginx-exporter
+    restart: unless-stopped
+    command:
+      - "--nginx.scrape-uri=http://nginx/nginx_status"
+    depends_on:
+      - nginx
+    networks:
+      - observability

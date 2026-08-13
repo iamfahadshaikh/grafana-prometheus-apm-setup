@@ -80,3 +80,8 @@ scrape_configs:
           - postgres-exporter:9187
         labels:
           database_name: "production-db"
+
+  - job_name: "nginx"
+    static_configs:
+      - targets:
+          - "nginx-exporter:9113"

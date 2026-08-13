@@ -374,8 +374,10 @@ services:
     container_name: nginx-exporter
     restart: unless-stopped
     command:
-      - "--nginx.scrape-uri=http://nginx/nginx_status"
-      - "--nginx.ssl-verify=false"
+      # - "--nginx.scrape-uri=http://nginx/nginx_status"
+      # - "--nginx.ssl-verify=false"
+      - "--nginx.scrape-uri=https://nginx/nginx_status"
+      - "--no-nginx.ssl-verify"
     depends_on:
       - nginx
     networks:

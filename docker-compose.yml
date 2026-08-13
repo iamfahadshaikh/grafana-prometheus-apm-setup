@@ -92,7 +92,7 @@ services:
         reservations:
           memory: 1GB
     ports:
-      - "127.0.0.1:9090:9090"
+      - "9090:9090"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     command:
@@ -162,7 +162,7 @@ services:
           cpus: '2.0'
           memory: 4GB
     ports:
-      - "127.0.0.1:3100:3100"
+      - "3100:3100"
     command:
       - -config.file=/etc/loki/config.yml
     volumes:
@@ -252,8 +252,8 @@ services:
       tempo:
         condition: service_healthy
     ports:
-      - "127.0.0.1:4317:4317"
-      - "127.0.0.1:4318:4318"
+      - "4317:4317"
+      - "4318:4318"
       - "127.0.0.1:8888:8888"
       - "127.0.0.1:13133:13133"
     command:

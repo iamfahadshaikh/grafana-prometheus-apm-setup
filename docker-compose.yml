@@ -187,7 +187,7 @@ services:
   # Promtail - Local Host & Container Log Collector
   ############################################################
   promtail:
-    image: grafana/promtail:2.9.6
+    image: grafana/promtail:3.6.8
     container_name: promtail
     restart: unless-stopped
     depends_on:

@@ -85,3 +85,10 @@ scrape_configs:
     static_configs:
       - targets:
           - "nginx-exporter:9113"
+
+  - job_name: 'test-app-vm'
+    static_configs:
+      - targets: ['20.219.7.13:9100']
+        labels:
+          host: 'Test-app'
+          environment: 'Testing'
